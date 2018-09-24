@@ -1,58 +1,124 @@
 # Object Flaw Detector
 
-## What it Does
-This object flaw detector application can be used to detect the various anomalies in the scenario of an object moving on a conveyor belt. This can be implemented in the production house of a certain product with some change in the threshold values. In practice, the task of observing video for this use case consists of two elements: detection and analysis. 
+| Details            |                 |
+|-----------------------|------------------|
+| Target OS:            |  Ubuntu\* 16.04 LTS     |
+| Programming Language  |  C++ |
+| Time to complete:     |  30 min      |
 
-## How it Works
-The sample code includes a number of functions used to count objects, detect color, detect cracks, detect orientation and read labels. The image or video source will need to be edited, in code, for each function. The function for object counting calculates the number of objects passing a conveyor belt. The function for color detection is used to find color anomalies by identifying the outlying scene and filtering unusually colored objects. We can use the orientation detection function to set orientation events to interactively respond to rotation and elevation changes. A function for label reading is available to scan multiple barcode batches in a single stack. This enables the software to automatically name and organize the files based on the embedded barcode information. 
+
+## Introduction
+
+This object flaw detector application detects the anomalies present in the objects moving on a conveyor belt. The application identifies the number of objects moving on the conveyor belt and checks for the presence of defects in the color and orientation of the object. The objects are checked for the presence of cracks. The ones containing cracks are marked as defective.
 
 ## Requirements
 
-### Software
+* Ubuntu 16.04
+* OpenVINO™ toolkit
+* Intel® System Studio 2018 
 
-* Ubuntu* 16.04
-* OpenVino™ R1.2
-* Python 3.6
+## How it works
 
-## Setup 
+* This application takes the input from a video camera or a video file for processing.
 
-1. Import this project into Intel® System Studio.  
-2. Change the video and image sources to your source in each function before running.
+![Data Flow Diagram](./images/dataFlow.png)
 
-### Code Description
+* Orientation defect detection: Get the frame and change the color space to HSV format. Threshold the image based on the color of the object using [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function to create a mask. Perform morphological opening and closing on the mask and find the contours using [findContours](https://docs.opencv.org/3.4.0/d4/d73/tutorial_py_contours_begin.html) function. Filter the contours based on the area. Perform [PCA](https://docs.opencv.org/3.4/d1/dee/tutorial_introduction_to_pca.html) on the contours to get the orientation of the object.
 
-The code is tested on the sample videos and give quite impressive results. There are various functions:
-1. **Counting object**: The purpose of this function is to calculate the number of object passing over the conveyor belt. Here, we use cv2 function createBackgroundMOG2, which removes the background from the video. Now, we draw the contours. From there, we calculate the moments and then the x,y coordinate for the same.
+![Figure 9](./images/figure9.png)
+
+* Color anomaly detection: Threshold the image based on the defective color of the object using [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function. Use the mask obtained from the [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function to find the defective area.
+
+![Figure 10](./images/figure10.png)
+
+* Crack detection: Transform the image from BGR to Grayscale format using [cvtColor](https://docs.opencv.org/3.4.3/d7/d1b/group__imgproc__misc.html#ga397ae87e1288a81d2363b61574eb8cab) function. Blur the image using [blur](https://docs.opencv.org/3.4.0/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html) function to remove the noises. Use the contours found on the blurred image to detect the cracks.
+
+![Figure 11](./images/figure11.png)
+
+* Save the images of defective objects in their respective folders. For example, objects with color defect are saved in **color** folder, objects containing cracks are saved in **crack** folder and objects with no defect are stored in **no_defect** folder.
+
+## Setting the build environment
+
+On the system, open Intel® System Studio 2018 and choose your workspace.
+1. Click **File -&gt; New -&gt; Project -&gt; Application Development**.
+2. Select **C/C++ project to build and run on this Linux Operating System**.
+
+![Figure 1](./images/figure1.png)
+
+3. Select **Intel Complier -&gt; Matrix Multiplication -ICC** example and change the name of the project to **object_flaw_detector**. 
+
+![Figure 2](./images/figure2.png)
+
+4. Click **Next**. Select Complier for the project as **GNU Compiler Collection (GCC)**. Click **Finish**.
+
+![Figure 3](./images/figure3.png)
+
+5. Delete the file named **compiler_sample.cpp**(example code) from the Project Explorer.
+6. Click **File -&gt; New -&gt; File**. Select the parent folder and name the new file as **product-flaw-detector.cpp**.
+7. Copy the code from **product-flaw-detector.cpp** of this repository to the newly created file.
 
 
-2. **Color Detection**: The purpose of this function is to find any color anomaly, if there, on the object over the conveyor belt.The detector builds a model of the natural coloring in the scene and identifies outliers pixels, which are then filtered both spatially and temporally to find unusually colored objects. These objects are then highlighted in the search video as suggestions for the user, thus shifting a portion of the user's task from scanning the video to verifying the suggestions.
+### Add Include Path
+1. Select **Project -> Properties -> C/C++ General -> Paths and Symbols**
+2. Select **Includes -> GNU C++** and Click on **Add...**
+3. Add *opt/intel/computer\_vision\_sdk\_&lt;version&gt;/opencv/include* to include the path of OpenVINO™ toolkit.
+
+![Figure 4](./images/figure4.png)
 
 
-3. **Crack Detection**: This function is used to detect if any crack is present on the object. It is using canny detector to threshold background.
+### Add Libraries  
+1. Select **Project -&gt; Properties -&gt; C/C++ Build -&gt; Settings -&gt; C++ Linker -&gt; Libraries**
+2. Add *opt/intel/computer\_vision\_sdk\_&lt;version&gt;/opencv/lib* to ```Library Search Path (-L)```
+3. Add **opencv_core, opencv_highgui, opencv_imgproc, opencv_imgcodecs, opencv_videoio** to the ```Libraries (-l)```
 
-4. **Orientation Detection**: In this function, we use HSV color format to separate out the object of interest. PCA is done on the object to find the orientation of the object. By receiving and processing the data reported by these orientation events, it's possible to interactively respond to rotation and elevation changes.
+![Figure 5](./images/figure5.png)
 
-5. **Label reader**: Traditional scanning methods require you to scan your documents in pre-separated batches and then manually name and organize the resulting files. Barcode scanning, on the other hand, allows you to scan multiple batches in a single stack and let the software automatically name and organize the files based on the embedded barcode information. Barcodes come in many standards, but these can all be grouped into two general flavors: 
+Select **Project -&gt; Properties -&gt; C/C++ Build -&gt; Settings -&gt; GCC C++ Compiler -&gt; Dialect**.
+Select the Language standard as ISO **C++ 11(-std=c++0x)** and click **OK**.
 
-    1D (linear) barcodes and 2D (matrix) barcodes.
+![Figure 6](./images/figure6.png)
 
-Linear barcodes are composed of parallel lines of varying widths and distances from each other, such as the UPCs that are scanned from your purchases with a laser barcode reader at most stores.
 
-Matrix barcodes are usually square (though sometimes circular) arrangements of smaller squares, circles, or triangles, such as the QR codes that you can scan with your phone from many modern advertisements. Matrix barcodes can pack more information per unit of area than their linear counterparts, but not all software is designed to read them.
+### Build the project 
+1. Select **Project -&gt; Build Project** and click **OK**.
 
-There are both advantages and disadvantages to using one standard over another. In addition to the amount of information that can be stored and the capability of your particular scanning software in deciphering it, some standards have additional functions such as checksums, which automatically validate whether or not the barcode was read correctly.
+![Figure 7](./images/figure7.png)
 
-## (Optional) Saving Data to the Cloud
-As an optional step you can take the data results and send them to an Amazon AWS instance for graphing. Every time an object is passed over the conveyor belt or any anomaly is detected, a bash script (up.sh) is called from the code. This will write the info with the time stamp to the InfluxDB* database. All the data is stored with unique timestamps.
+### Run the project
+1. Select **Run -&gt; Run Configuration.. -&gt; C/C++ Application -&gt;**. Choose the project **object_flaw_detector**.
+2. Click on **Arguments** and specify the path of the video under **Program Arguments**.
+3. Click **Run**.
 
-1\. Make an EC2 Linux* instance on AWS
-([*https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2\_GetStarted.html*](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html))
+![Figure 8](./images/figure8.png)
 
-2\. Install InfluxDB* on EC2 Linux instance
-([*https://github.com/influxdata/influxdb*](https://github.com/influxdata/influxdb))
+## To run the application from the terminal
 
-3\. Install Grafana* on EC2 Linux instance
-([*https://grafana.com/get*](https://grafana.com/get))
+* Open a terminal on Ubuntu.
 
-4\. Fill in your information in p1.py of the location and credentials of your Grafana on EC2 instance.
+* Updates to several environment variables are required to compile and run OpenVINO™ toolkit applications. Run the following script on the terminal to temporarily set the environment variables.
+ 
+   ``` source /opt/intel/computer_vision_sdk_2018.2.<version>/computer_vision_sdk/bin/setupvars.sh ```
+
+*  Go to object flaw detector directory.
+	
+   ``` cd <path-to-object-flaw-detector> ```
+
+* Create a directory **build**.
+
+   ``` mkdir build ```
+
+* Build the project.
+	
+   ``` 
+   cd build 	
+   cmake .. 
+   make 
+   ```
+
+* Run the application.
+
+   ``` ./product-flaw-detector <VideoFile> ```
+
+  **Note:** To get the input video from the camera, use the following command:
+   ``` ./product-flaw-detector cam ```
 
