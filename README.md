@@ -14,7 +14,7 @@ This object flaw detector application detects the anomalies present in the objec
 ## Requirements
 
 * Ubuntu 16.04
-* OpenVINO™ toolkit
+* Intel® Distribution of OpenVINO™ toolkit
 * Intel® System Studio 2018 
 
 ## How it works
@@ -61,7 +61,7 @@ On the system, open Intel® System Studio 2018 and choose your workspace.
 ### Add Include Path
 1. Select **Project -> Properties -> C/C++ General -> Paths and Symbols**
 2. Select **Includes -> GNU C++** and Click on **Add...**
-3. Add *opt/intel/computer\_vision\_sdk\_&lt;version&gt;/opencv/include* to include the path of OpenVINO™ toolkit.
+3. Add *opt/intel/computer\_vision\_sdk\_&lt;version&gt;/opencv/include* to include the path of the Intel® Distribution of OpenVINO™ toolkit.
 
 ![Figure 4](./images/figure4.png)
 
@@ -95,7 +95,7 @@ Select the Language standard as ISO **C++ 11(-std=c++0x)** and click **OK**.
 
 * Open a terminal on Ubuntu.
 
-* Updates to several environment variables are required to compile and run OpenVINO™ toolkit applications. Run the following script on the terminal to temporarily set the environment variables.
+* Updates to several environment variables are required to compile and run Intel® Distribution of OpenVINO™ toolkit applications. Run the following script on the terminal to temporarily set the environment variables.
  
    ``` source /opt/intel/computer_vision_sdk_2018.2.<version>/computer_vision_sdk/bin/setupvars.sh ```
 
