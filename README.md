@@ -68,15 +68,6 @@ Use below commands to install Grafana:
 
 * Save the images of defective objects in their respective folders. For example, objects with color defect are saved in **color** folder, objects containing cracks are saved in **crack** folder, objects with orientation defect are saved in **orientation** folder and objects with no defect are stored in **no_defect** folder.
 
-## Set the Build Environment
-
-To use InfluxDB client execute the following command:
-
-   ```
-   git clone https://github.com/orca-zhang/influxdb-cpp
-   ```
-Copy influxdb.hpp file from `influxDB-cpp` directory to `object-flaw-detector` directory.
-
 ## Install Intel® System Studio 2019
 
 1. Download [Intel® System Studio 2019](https://software.intel.com/en-us/system-studio/choose-download) and extract the downloaded zip file.
