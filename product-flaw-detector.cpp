@@ -37,7 +37,6 @@
  * Pull the file and place it in current working directory.
  */
 
-#include "influxdb.hpp"
 
 using namespace cv;
 using namespace std;
