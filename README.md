@@ -6,67 +6,50 @@
 | Programming Language:  |  C++ |
 | Time to complete:     |  30 min      |
 
-# ---This reference implementation is under construction, please check back in a couple of weeks for an update.---
-
+![intoduction](./docs/images/Color.png)
 ## Introduction
 
 Object flaw detector application detects anomalies such as color, crack and the orientation of an object moving on a conveyor belt. Anomalies are marked as defective and saved in the color, crack, orientation folders respectively. Also objects with no defects are saved in no_defect folder. These anomalies data are sent to InfluxDB* database and  visualized on Grafana*. This application also measures length and width of the object in millimeters.
 
 ## Requirements
+### Hardware
+* [IEI Tank* AIoT Developer Kit](https://software.intel.com/en-us/iot/hardware/iei-tank-dev-kit)
 
-* Ubuntu* 16.04
-* Intel® Distribution of OpenVINO™ toolkit 2019 R1 Release
+### Software
+* [Ubuntu* 16.04 LTS](http://releases.ubuntu.com/16.04/)
+* Intel® Distribution of OpenVINO™ toolkit 2019 R2 Release
 * Intel® System Studio 2019
-* Grafana* v5.3.2
-* InfluxDB* 1.6.2 
-
-### Install Intel® Distribution of OpenVINO™ toolkit
-
-Refer to [Install Intel® Distribution of OpenVINO™ toolkit on Linux*](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux) for more information on how to install and setup the toolkit.
-
-### Install InfluxDB* 
-
-Use below commands to install InfluxDB:
-
-   ```
-   sudo apt install curl
-   sudo curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add - 
-   source /etc/lsb-release
-   echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
-   sudo apt-get update && sudo apt-get install influxdb
-   sudo service influxdb start
-   ```
-
-### Install Grafana*
-
-Use below commands to install Grafana:
-
-   ```
-   wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana_5.3.2_amd64.deb
-   sudo apt-get install -y adduser libfontconfig
-   sudo dpkg -i grafana_5.3.2_amd64.deb
-   sudo /bin/systemctl start grafana-server
-   ```
 
 ## How It Works
 
 * This application accepts input from a video camera or a video file for processing.
 
-  ![Data Flow Diagram](./images/dataFlow.png)
+  ![Data Flow Diagram](./docs/images/dataFlow.png)
 
 * **Orientation defect detection**: Obtain the frame and change the color space to HSV format. Threshold the image based on the color of the object using [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function to create a mask. Perform morphological opening and closing on the mask and find the contours using [findContours](https://docs.opencv.org/3.4.0/d4/d73/tutorial_py_contours_begin.html) function. Filter the contours based on the area. Perform [PCA](https://docs.opencv.org/3.4/d1/dee/tutorial_introduction_to_pca.html) on the contours to get the orientation of the object.
 
-  ![Figure 9](./images/Orientation.png)
+  ![Figure 9](./docs/images/Orientation.png)
 
 * **Color defect detection**: Threshold the image based on the defective color of the object using [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function. Use the mask obtained from the [inRange](https://docs.opencv.org/3.4.0/da/d97/tutorial_threshold_inRange.html) function to find the defective area.
 
-  ![Figure 10](./images/Color.png)
+  ![Figure 10](./docs/images/Color.png)
 
 * **Crack detection**: Transform the image from BGR to Grayscale format using [cvtColor](https://docs.opencv.org/3.4.3/d7/d1b/group__imgproc__misc.html#ga397ae87e1288a81d2363b61574eb8cab) function. Blur the image using [blur](https://docs.opencv.org/3.4.0/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html) function to remove the noises. Use the contours found on the blurred image to detect the cracks.
 
-  ![Figure 11](./images/Crack.png)
+  ![Figure 11](./docs/images/Crack.png)
 
 * Save the images of defective objects in their respective folders. For example, objects with color defect are saved in **color** folder, objects containing cracks are saved in **crack** folder, objects with orientation defect are saved in **orientation** folder and objects with no defect are stored in **no_defect** folder.
+
+## Setup
+### Get the code
+Clone the reference implementation<br>
+```
+sudo apt-get update && sudo apt-get install git
+git clone https://github.com/intel-iot-devkit/object-flaw-detector-cpp.git
+```
+### Install Intel® Distribution of OpenVINO™ toolkit
+
+Refer to [Install Intel® Distribution of OpenVINO™ toolkit on Linux*](https://software.intel.com/en-us/articles/OpenVINO-Install-Linux) for more information on how to install and setup the toolkit.
 
 ## Install Intel® System Studio 2019
 
@@ -74,62 +57,162 @@ Use below commands to install Grafana:
 2. Open a new terminal and navigate to the directory where the contents are extracted in the previous step.
 3. Run ./install.sh script and follow the instructions provided there to install Intel® System Studio 2019.
 
+### Other dependencies
+**InfluxDB***<br>
+InfluxDB is a time series database designed to handle high write and query loads. InfluxDB is meant to be used as a backing store for any use case involving large amounts of timestamped data, including DevOps monitoring, application metrics, IoT sensor data, and real-time analytics.
+
+**Grafana***<br>
+Grafana is an open-source, general purpose dashboard and graph composer, which runs as a web application. It supports Graphite, InfluxDB, Prometheus, OpenTSDB etc., as backends. Grafana allows you to query, visualize, alert on and understand your metrics no matter where they are stored.<br>
+
+### Install the dependencies
+To download the video and install the dependencies of the application, run the below command in the `object-flaw-detector-cpp` directory:
+```
+./setup.sh
+```
+### The config file
+The _resources/config.json_ contains the path of video that will be used by the application as input.
+
+For example:
+   ```
+   {
+       "inputs": [
+          {
+              "video":"path_to_video/video1.mp4"
+          }
+       ]
+   }
+   ```
+
+The `path/to/video` is the path to an input video file.
+
+
+### Which Input Video to use
+
+We recommend using [bolt-detection](https://github.com/intel-iot-devkit/sample-videos/blob/master/bolt-detection.mp4).
+For example:
+   ```
+   {
+       "inputs": [
+          {
+              "video":"sample-videos/bolt-detection.mp4
+          }
+       ]
+   }
+   ```
+If the user wants to use any other video, it can be used by providing the path in the config.json file.
+
+### Using the Camera instead of video
+Replace `path/to/video` with the camera ID in the **config.json** file, where the ID is taken from the video device (the number **X** in /dev/video**X**).
+
+On Ubuntu, to list all available video devices use the following command:
+
+```
+ls /dev/video*
+```
+
+For example, if the output of above command is __/dev/video0__, then config.json would be:
+
+```
+  {
+     "inputs": [
+        {
+           "video":"0"
+        }
+     ]
+  }
+```
+### Setup the environment
+
+Configure the environment to use the Intel® Distribution of OpenVINO™ toolkit one time per session by exporting environment variables:
+
+```
+source /opt/intel/openvino/bin/setupvars.sh
+```
+**Note:** This command needs to be executed only once in the terminal where the application will be executed. If the terminal is closed, the command needs to be executed again.
+
+### Build the application
+To build, go to intruder-detector-cpp directory and run the following commands:
+
+```
+mkdir -p build && cd build
+cmake ..
+make
+```
+
+## Run the application
+### Run the Application from the Terminal
+
+To run the application, use the following command:
+```
+./product-flaw-detector
+```
+
+**Optional:** If field of view and distance between the object and camera are available, use -f and -d command line arguments respectively. Otherwise a camera of 96 pixels per inch is considered by default. For example:
+
+```
+./product-flaw-detector -f 60 -d 50
+```
+
+**Note:** User can get field of view from camera specifications. The values for -f and -d should be in **degrees** and **millimeters** respectively.
+
+
 ### Run the Application on Intel® System Studio 2019
 
 On the system, open Intel® System Studio 2019 and choose your workspace.
 1. Click **File -&gt; New -&gt; Project -&gt; Intel Application Development**.
 2. Select **C++ project**. Click **Next**.
 
-![Figure 1](./images/figure1.png)
+![Figure 1](./docs/images/figure1.png)
 
 3. Select **Tool Samples** tab and click on  **Intel® C++ Complier -&gt; Hello World** example and change the name of the project to **object-flaw-detector**. Click **Next**.
 
-![Figure 2](./images/figure2.png)
+![Figure 2](./docs/images/figure2.png)
 
 4. Select Complier for the project as **GNU Compiler Collection* (GCC)**. Click **Finish**.
 
-![Figure 3](./images/figure3.png)
+![Figure 3](./docs/images/figure3.png)
 
 5. Delete the file named **hello_world.cpp** (example code) from the Project Explorer.
 6. Click **File -&gt; New -&gt; File**. Select the parent folder and name the new file as **product-flaw-detector.cpp**. Click **Finish**.
-7. Copy the code from **product-flaw-detector.cpp** of this repository to the newly created file.
-
+7. Copy the code from **main.cpp** located in **application/src** to the newly created file.
+8. Copy the **config.json** from the *<path-to-object-flaw-detector-cpp>/resources* to the *<current-workspace>/resources* directory.
+9. Open the **config.json** in the current-workspace directory and provide the path of the video.
+10. Copy the **influxdb.cpp** from the *<path-to-object-flaw-detector-cpp>/application/src* to the current working directory.
 
 ### Add Include Path
 1. Select **Project -> Properties -> C/C++ General -> Paths and Symbols**.
 2. Select **Includes -> GNU C++** and Click on **Add...**
-3. Click on **File system...** and add *opt/intel/openvino/opencv/include* and *<path_to_object-flaw-detector_directory>* to include the path of OpenVINO™ toolkit. Click **Apply and Close**.
+3. Click on **File system...** and add *opt/intel/openvino/opencv/include*, *<path_to_object-flaw-detector_directory>/application/src*, *<path_to_object-flaw-detector_directory>/json/single_include* and *<path_to_object-flaw-detector_directory>/application/include* to include the path of OpenVINO™ toolkit. Click **Apply and Close**.
 
-![Figure 4](./images/figure4.png)
+![Figure 4](./docs/images/figure4.png)
 
 
 ### Add Libraries  
 1. Select **Project -&gt; Properties -&gt; C/C++ Build -&gt; Settings -&gt; GCC C++ Linker -&gt; Libraries.**
 2. Click on **File system...** and add *opt/intel/openvino/opencv/lib* to ```Library Search Path (-L)```.
-3. Add **opencv_core, opencv_highgui, opencv_imgproc, opencv_imgcodecs, opencv_videoio** to the ```Libraries (-l)``` and click **Apply and Close**.
+3. Add **opencv_core, curl, opencv_highgui, opencv_imgproc, opencv_imgcodecs, opencv_videoio** to the ```Libraries (-l)``` and click **Apply and Close**.
 
-![Figure 5](./images/figure5.png)
+![Figure 5](./docs/images/figure5.png)
 
 Select **Project -&gt; Properties -&gt; C/C++ Build -&gt; Settings -&gt; GCC C++ Compiler -&gt; Dialect**.
 Select the Language standard as ISO **C++ 11(-std=c++0x)** and click **Apply and Close**.
 
-![Figure 6](./images/figure6.png)
+![Figure 6](./docs/images/figure6.png)
 
 ### Build the Project 
 1. Select **Project -&gt; Build Project**.
 
-![Figure 7](./images/figure7.png)
+![Figure 7](./docs/images/figure7.png)
 
 ### Run the Project
 1. Select **Run -&gt; Run Configuration.. -&gt; C/C++ Application -&gt;**. Choose the project **object-flaw-detector**.
-2. Click on **Arguments** and specify the path of the video under **Program Arguments** followed by -i.
-3. Click **Run**.
+2. Click **Run**.
 
-![Figure 8](./images/figure8.png)
+![Figure 8](./docs/images/figure8.png)
 
 **Optional**- If field of view and distance between the object and camera are available, use -f and -d arguments respectively. Otherwise camera of 96 pixels per inch is considered by default. 
 
-![Figure 9](./images/figure9.png)
+![Figure 9](./docs/images/figure9.png)
 
 4. To run the program using camera as input, replace the video path in step 2 with cam. 
 
@@ -146,53 +229,6 @@ Execute these steps:
 * Write the path of the particular library in the opencv.conf file.
 * Run sudo ldconfig -v.
 
-## Run the Application from the Terminal
-
-* Open a terminal on Ubuntu.
-
-* Updates to several environment variables are required to compile and run Intel® Distribution of OpenVINO™ toolkit applications. Run the following script on the terminal to temporarily set the environment variables.
-
-   ``` 
-   source /opt/intel/openvino/bin/setupvars.sh 
-   ```
-
-* Go to `object-flaw-detector` directory.
-	
-   ``` 
-   cd <path-to-object-flaw-detector> 
-   ```
-
-* Create a directory **build**.
-
-   ``` 
-   mkdir build 
-   ```
-
-* Build the project.
-		
-   ``` 
-   cd build
-   cmake .. 
-   make 
-   ```
-
-* Run the application.
-
-   ``` 
-   ./product-flaw-detector -i ../data/object-flaw-detector.mp4 
-   ```
-
-  **Note:** To get the input video from the camera, use the following command:
-   ``` 
-   ./product-flaw-detector -i cam 
-   ```
-  **Optional:** If field of view and distance between the object and camera are available, use -f and -d command line arguments respectively. Otherwise a camera of 96 pixels per inch is considered by default. For example:
-
-    ``` 
-    ./product-flaw-detector -i ../data/object-flaw-detector.mp4  -f 60 -d 50
-    ```
-
-  **Note:** User can get field of view from camera specifications. The values for -f and -d should be in **degrees** and **millimeters** respectively.
 
 * To check the data on InfluxDB, run the following commands.
 
@@ -226,7 +262,7 @@ Execute these steps:
      * *Database*: Defect.
      * Click on “Save and Test”.
 
-       ![Grafana1](./images/Grafana1.png)
+       ![Grafana1](./docs/images/Grafana1.png)
 
 7. To add graph to the created Dashboard, follow the below steps
      * Click on Add(**+**) on left side of panel. 
@@ -242,8 +278,7 @@ Execute these steps:
      * On the **Time range** tab, change the **override relative time** to 100s.
      * Save the dashboard by clicking on top panel with name **productFlawDetector**.
 
-
-       ![Grafana2](./images/Grafana2.png)
+        ![Grafana2](./docs/images/Grafana2.png)
 
 8. To add table to the created Dashboard, follow the below steps
      * Click on the **add panel** icon on the top menu.
@@ -252,7 +287,7 @@ Execute these steps:
      * From the **Column Styles** tab, click on **+Add** in the **Apply to columns named** give the name **objectNumber**, and change the value to **0** in the **Decimals** under **Type** option.
      * In the same row click on **+Add** and select other fields (**“crackDefect”**, **“orientationDefect”** and **“colorDefect”**).
      * Save the dashboard and click on **Back to dashboard** icon which is on right corner of the top menu.
-       ![Grafana3](./images/Grafana3.png)
+       ![Grafana3](./docs/images/Grafana3.png)
   
 9.  To add gauge to the created Dashboard, follow the below steps
      * Click on the **add panel** icon on the top menu. 
@@ -260,7 +295,7 @@ Execute these steps:
      * Select **Selectors** and click on **last**  from select row. Do the following only for **objectNumber**.Name the query as **objectNumber** in the   **ALIAS BY** row. 
      * On the **Options** tab, select **show** under **Gauge** option  and change the value of **decimals** to **0** under **Value** option.
      * Save the dashboard and click on **Back to dashboard** icon.
-       ![Grafana4](./images/Grafana4.png)
+       ![Grafana4](./docs/images/Grafana4.png)
 
 10. Mark the current directory as favorite by clicking on **Mark as favorite** icon on the top menu.
 
@@ -272,11 +307,11 @@ Execute these steps:
      * The **“New dashboard”** will now show up in the list of starred dashboards (and probably also under “Recently viewed dashboards”).
      * Click on “New dashboard” to see the chart.
 
-        ![Grafana5](./images/Grafana5.png) 
+        ![Grafana5](./docs/images/Grafana5.png)
 
      * Run the C++ code again to visualize data on grafana.
 
-        ![Grafana6](./images/Grafana6.png)
+        ![Grafana6](./docs/images/Grafana6.png)
 
         ​                                                           
 
@@ -293,11 +328,11 @@ Execute these steps:
      * *Database*: Defect
      * Click on “Save and Test”
 
-       ![Grafana7](./images/Grafana7.png)
+       ![Grafana7](./docs/images/Grafana7.png)
 
    6. Click on **+**  icon present on the left side of the browser, select **import**.
    7. Click on **Upload.json File**.
-   8. Select the file name "productFlawDetector.json" from object-flaw-detector directory.
+   8. Select the file name "productFlawDetector.json" from _object-flaw-detector/resources_ directory.
    9. Select "Defect" in **Select a influxDB data source**.
   10. Click on import.
   11. Run the application to see the data on the dashboard.

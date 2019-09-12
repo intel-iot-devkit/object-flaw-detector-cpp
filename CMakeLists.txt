@@ -24,7 +24,9 @@ project( product-flaw-detector )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
-add_executable( product-flaw-detector product-flaw-detector.cpp )
-target_link_libraries( product-flaw-detector ${OpenCV_LIBS}) 
+include_directories( application/include )
+include_directories(json/single_include)
+add_executable(  product-flaw-detector application/src/main.cpp application/src/influxdb.cpp )
+target_link_libraries( product-flaw-detector ${OpenCV_LIBS} -lcurl)
 
 
