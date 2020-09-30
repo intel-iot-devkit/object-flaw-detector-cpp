@@ -2,7 +2,7 @@
 
 | Details            |                 |
 |-----------------------|------------------|
-| Target OS:            |  Ubuntu\* 16.04 LTS     |
+| Target OS:            |  Ubuntu\* 18.04 LTS     |
 | Programming Language:  |  C++ |
 | Time to complete:     |  30 min      |
 
@@ -16,8 +16,8 @@ Object flaw detector application detects anomalies such as color, crack and the 
 * [IEI Tank* AIoT Developer Kit](https://software.intel.com/en-us/iot/hardware/iei-tank-dev-kit)
 
 ### Software
-* [Ubuntu* 16.04 LTS](http://releases.ubuntu.com/16.04/)
-* Intel® Distribution of OpenVINO™ toolkit 2019 R2 Release
+* [Ubuntu* 18.04 LTS](http://releases.ubuntu.com/18.04/)
+* Intel® Distribution of OpenVINO™ toolkit 2020 R3 Release
 * Intel® System Studio 2019
 
 ## How It Works
